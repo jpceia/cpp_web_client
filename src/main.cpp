@@ -22,6 +22,11 @@
 
 #define BUFF_SIZE 1024
 
+struct KeyPair {
+    std::string key;
+    std::string cert;
+};
+
 void init_openssl()
 {
     SSL_load_error_strings();
@@ -124,7 +129,10 @@ int main(int argc, char *argv[])
 
     init_openssl();
     SSL_CTX *ctx = create_context();
-    configure_context(ctx);
+    KeyPair key_pair;
+    key_pair.key = "certs/privateKey.key";
+    key_pair.cert = "certs/certificate.crt";
+    configure_context(ctx, &key_pair);
     SSL *ssl = SSL_new(ctx);
     SSL_set_fd(ssl, connection);
     if (SSL_accept(ssl) != 1)
