@@ -6,7 +6,7 @@
 #    By: jpceia <joao.p.ceia@gmail.com>             +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/11/04 23:37:29 by jceia             #+#    #+#              #
-#    Updated: 2022/03/19 01:54:42 by jpceia           ###   ########.fr        #
+#    Updated: 2022/03/19 03:31:47 by jpceia           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,6 +15,7 @@ NAME        = https-webserv
 INC_DIR     = inc
 SRC_DIR     = src
 OBJ_DIR     = obj
+BIN_DIR	 	= bin
 
 SRCS        = $(shell find $(SRC_DIR) -name "*.cpp" -type f)
 OBJS        = $(SRCS:$(SRC_DIR)/%=$(OBJ_DIR)/%.o)
@@ -43,7 +44,7 @@ $(OBJ_DIR)/%.o:    $(SRC_DIR)/%
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Linking
-$(NAME): $(OBJS)
+$(BIN_DIR)/$(NAME): $(OBJS)
 	$(CXX) $(LDFLAGS) $^ -o $@
 
 all: $(NAME)
