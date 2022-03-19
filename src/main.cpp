@@ -15,10 +15,15 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include <openssl/ssl.h>
+
+#include <openssl/ssl.h> /* core library */
+#include <openssl/err.h> /* errors */
 
 // https://stackoverflow.com/questions/16255323/make-an-https-request-using-sockets-on-linux
 // https://stackoverflow.com/questions/61969517/tcp-server-client-using-openssl
+// https://opensource.com/article/19/6/cryptography-basics-openssl-part-1
+// https://opensource.com/article/19/6/cryptography-basics-openssl-part-2
+// https://github.com/z4pu/tcp_to_tls
 
 #define BUFF_SIZE 1024
 
