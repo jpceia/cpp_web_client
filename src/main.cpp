@@ -63,17 +63,17 @@ SSL_CTX *create_context()
     return ctx;
 }
 
-void configure_context(SSL_CTX *ctx)
+void configure_context(SSL_CTX *ctx, KeyPair *key_pair)
 {
     SSL_CTX_set_ecdh_auto(ctx, 1);
     
     /* Set the key and cert */
-    if (SSL_CTX_use_certificate_file(ctx, "certificate.crt", SSL_FILETYPE_PEM) <= 0)
+    if (SSL_CTX_use_certificate_file(ctx, key_pair->cert.c_str(), SSL_FILETYPE_PEM) <= 0)
     {
         std::cerr << "Unable to load certificate file" << std::endl;
         exit(EXIT_FAILURE);
     }
-    if (SSL_CTX_use_PrivateKey_file(ctx, "privateKey.key", SSL_FILETYPE_PEM) <= 0 )
+    if (SSL_CTX_use_PrivateKey_file(ctx, key_pair->key.c_str(), SSL_FILETYPE_PEM) <= 0 )
     {
         std::cerr << "Unable to load private key file" << std::endl;
         exit(EXIT_FAILURE);
