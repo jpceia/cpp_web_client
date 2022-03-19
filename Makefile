@@ -6,7 +6,7 @@
 #    By: jpceia <joao.p.ceia@gmail.com>             +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/11/04 23:37:29 by jceia             #+#    #+#              #
-#    Updated: 2022/03/19 03:31:47 by jpceia           ###   ########.fr        #
+#    Updated: 2022/03/19 03:54:10 by jpceia           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -45,16 +45,17 @@ $(OBJ_DIR)/%.o:    $(SRC_DIR)/%
 
 # Linking
 $(BIN_DIR)/$(NAME): $(OBJS)
+	@mkdir -p $(dir $@)
 	$(CXX) $(LDFLAGS) $^ -o $@
 
-all: $(NAME)
+all: $(BIN_DIR)/$(NAME)
 
 # Cleaning
 clean:
 	$(RM) -rf $(OBJ_DIR)
 
 fclean: clean
-	$(RM) $(NAME)
+	$(RM) -rf $(BIN_DIR)
 
 # Rebuild
 re: fclean all
