@@ -6,7 +6,7 @@
 /*   By: jpceia <joao.p.ceia@gmail.com>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/19 01:16:09 by jpceia            #+#    #+#             */
-/*   Updated: 2022/03/19 03:23:50 by jpceia           ###   ########.fr       */
+/*   Updated: 2022/03/19 03:41:56 by jpceia           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,11 @@
 
 #include <openssl/ssl.h> /* core library */
 #include <openssl/err.h> /* errors */
+#include <openssl/x509.h> /* X509 */
+#include <openssl/x509_vfy.h> /* X509_STORE_CTX */
+#include <openssl/x509v3.h> /* X509V3_EXT_print */
+
+#include <string.h> /* strlen */
 
 // https://stackoverflow.com/questions/16255323/make-an-https-request-using-sockets-on-linux
 // https://stackoverflow.com/questions/61969517/tcp-server-client-using-openssl
@@ -45,6 +50,126 @@ void cleanup_openssl()
     EVP_cleanup();
 }
 
+void print_san_name(const char* label, X509* const cert)
+{
+    int success = 0;
+    GENERAL_NAMES* names = NULL;
+    unsigned char* utf8 = NULL;
+
+    do
+    {
+        if(!cert)
+            break; /* failed */
+
+        names = (GENERAL_NAMES*)X509_get_ext_d2i(cert, NID_subject_alt_name, 0, 0 );
+        if(!names) break;
+
+        int i = 0, count = sk_GENERAL_NAME_num(names);
+        if(!count) break; /* failed */
+
+        for( i = 0; i < count; ++i )
+        {
+            GENERAL_NAME* entry = sk_GENERAL_NAME_value(names, i);
+            if(!entry) continue;
+
+            if(GEN_DNS == entry->type)
+            {
+                int len1 = 0, len2 = -1;
+
+                len1 = ASN1_STRING_to_UTF8(&utf8, entry->d.dNSName);
+                if(utf8) {
+                    len2 = (int)strlen((const char*)utf8);
+                }
+
+                if(len1 != len2) {
+                    fprintf(stderr, "  Strlen and ASN1_STRING size do not match (embedded null?): %d vs %d\n", len2, len1);
+                }
+
+                /* If there's a problem with string lengths, then     */
+                /* we skip the candidate and move on to the next.     */
+                /* Another policy would be to fails since it probably */
+                /* indicates the client is under attack.              */
+                if(utf8 && len1 && len2 && (len1 == len2)) {
+                    fprintf(stdout, "  %s: %s\n", label, utf8);
+                    success = 1;
+                }
+
+                if(utf8) {
+                    OPENSSL_free(utf8), utf8 = NULL;
+                }
+            }
+            else
+            {
+                fprintf(stderr, "  Unknown GENERAL_NAME type: %d\n", entry->type);
+            }
+        }
+
+    } while (0);
+
+    if(names)
+        GENERAL_NAMES_free(names);
+
+    if(utf8)
+        OPENSSL_free(utf8);
+
+    if(!success)
+        fprintf(stdout, "  %s: <not available>\n", label);
+
+}
+
+void print_cn_name(const char* label, X509_NAME* name)
+{
+	int idx = -1;
+	unsigned char *utf8 = NULL;
+	X509_NAME_ENTRY* entry;
+	ASN1_STRING* data;
+
+	if (!name)
+		return;
+
+	idx = X509_NAME_get_index_by_NID(name, NID_commonName, -1);
+	if (idx < 0)
+		return;
+
+	entry = X509_NAME_get_entry(name, idx);
+	if (!entry)
+		return;
+
+	data = X509_NAME_ENTRY_get_data(entry);
+	if (!data)
+		return;
+
+	if (!ASN1_STRING_to_UTF8(&utf8, data) || !utf8)
+		return;
+
+	printf("%s: %s\n", label, utf8);
+	OPENSSL_free(utf8);
+}
+
+
+int verify_callback(int preverify, X509_STORE_CTX* x509_ctx)
+{
+    int depth = X509_STORE_CTX_get_error_depth(x509_ctx);
+    //int err = X509_STORE_CTX_get_error(x509_ctx);
+    
+    X509* cert = X509_STORE_CTX_get_current_cert(x509_ctx);
+    X509_NAME* iname = cert ? X509_get_issuer_name(cert) : NULL;
+    X509_NAME* sname = cert ? X509_get_subject_name(cert) : NULL;
+
+    if (cert)
+    {
+        print_cn_name("Issuer (cn)", iname);
+        print_cn_name("Subject (cn)", sname);
+    }
+
+    if(depth == 0) {
+        /* If depth is 0, its the server's certificate. Print the SANs too */
+        print_san_name("Subject (san)", cert);
+    }
+
+    return preverify;
+}
+
 SSL_CTX *create_context()
 {
     const SSL_METHOD *method;
@@ -59,6 +184,12 @@ SSL_CTX *create_context()
         std::cerr << "Unable to create SSL context" << std::endl;
         exit(EXIT_FAILURE);
     }
+
+    /* Cannot fail ??? */
+    SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, verify_callback);
+
+    /* Cannot fail ??? */
+    SSL_CTX_set_verify_depth(ctx, 4);
 
     return ctx;
 }
