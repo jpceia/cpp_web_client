@@ -6,7 +6,7 @@
 /*   By: jpceia <joao.p.ceia@gmail.com>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/19 01:16:09 by jpceia            #+#    #+#             */
-/*   Updated: 2022/03/19 02:27:17 by jpceia           ###   ########.fr       */
+/*   Updated: 2022/03/19 03:23:50 by jpceia           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,6 +121,7 @@ int main(int argc, char *argv[])
     ss >> port;
 
     int sock = create_listener(port);
+    std::cout << "Listening on port " << port << std::endl;
     
     // accept connections
     struct sockaddr_in cli_addr;
@@ -140,7 +141,10 @@ int main(int argc, char *argv[])
     configure_context(ctx, &key_pair);
     SSL *ssl = SSL_new(ctx);
     SSL_set_fd(ssl, connection);
-    if (SSL_accept(ssl) != 1)
+    //int ret = SSL_accept(ssl);
+    SSL_set_accept_state(ssl);
+    int ret = SSL_do_handshake(ssl);
+    if (ret != 1)
     {
         std::cerr << "Could not accept SSL connection" << std::endl;
         exit(EXIT_FAILURE);
