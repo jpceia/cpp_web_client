@@ -6,12 +6,12 @@
 /*   By: jpceia <joao.p.ceia@gmail.com>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/23 06:02:05 by jpceia            #+#    #+#             */
-/*   Updated: 2022/03/27 00:11:05 by jpceia           ###   ########.fr       */
+/*   Updated: 2022/03/27 02:53:37 by jpceia           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HTTP/Connection.hpp"
-#include "HTTP/RequestParser.hpp"
+#include "HTTP/Parser/Response.hpp"
 #include "TCP/Connection.hpp"
 
 
@@ -40,26 +40,26 @@ HttpConnection& HttpConnection::operator=(const HttpConnection& rhs)
     return *this;
 }
 
-void HttpConnection::sendResponse(const HttpResponse& response) const
+void HttpConnection::sendRequest(const HttpRequest& request) const
 {
     std::stringstream ss;
-    ss << response;
+    ss << request;
     std::string msg = ss.str();
     while (!msg.empty())
         TcpConnection::send(msg);
 }
 
-HttpRequest HttpConnection::recvRequest() const
+HttpResponse HttpConnection::recvResponse() const
 {
-    HttpRequestParser request;
+    HttpResponseParser response;
     ParseState state = PARSE_START;
 
     while (state != PARSE_COMPLETE)
     {
         std::string chunk = TcpConnection::recv();
-        state = request.parse(chunk);
+        state = response.parse(chunk);
         if (chunk.empty())
             throw TcpConnection::DisconnectedException();
     }
-    return request;
+    return response;
 }
