@@ -18,7 +18,7 @@
 # include <iostream>
 # include <map>
 
-class HttpResponse : public HttpMessage
+class HttpResponse : virtual public HttpMessage
 {
 
 public:

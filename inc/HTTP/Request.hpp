@@ -6,7 +6,7 @@
 /*   By: jpceia <joao.p.ceia@gmail.com>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/22 13:00:01 by jceia             #+#    #+#             */
-/*   Updated: 2022/03/27 00:11:47 by jpceia           ###   ########.fr       */
+/*   Updated: 2022/03/27 02:40:01 by jpceia           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 # include <iostream>
 # include <map>
 
-class HttpRequest : public HttpMessage
+class HttpRequest : virtual public HttpMessage
 {
 public:
     HttpRequest();
