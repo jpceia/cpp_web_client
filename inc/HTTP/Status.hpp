@@ -6,7 +6,7 @@
 /*   By: jpceia <joao.p.ceia@gmail.com>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/24 00:10:54 by jpceia            #+#    #+#             */
-/*   Updated: 2022/03/27 00:11:25 by jpceia           ###   ########.fr       */
+/*   Updated: 2022/03/27 02:46:18 by jpceia           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ public:
     int getCode() const;
 
     // IO operators
+    friend std::istream &operator>>(std::istream &is, HttpStatus& status);
     friend std::ostream &operator<<(std::ostream &out, const HttpStatus& status);
 
 private:
