@@ -6,7 +6,7 @@
 /*   By: jpceia <joao.p.ceia@gmail.com>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/23 03:04:11 by jpceia            #+#    #+#             */
-/*   Updated: 2022/03/27 00:11:03 by jpceia           ###   ########.fr       */
+/*   Updated: 2022/03/27 02:45:17 by jpceia           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,19 +21,8 @@ TcpConnection::TcpConnection(int sock) :
         throw std::runtime_error("Invalid file descriptor");
 }
 
-TcpConnection::TcpConnection(const TcpConnectionArgs& args) :
-    _sock(args.sock),
-    _server_addr(args.server_addr),
-    _client_addr(args.client_addr)
-{
-    if (_sock < 0)
-        throw std::runtime_error("Invalid file descriptor");
-}
-
 TcpConnection::TcpConnection(const TcpConnection& rhs) :
-    _sock(rhs._sock),
-    _server_addr(rhs._server_addr),
-    _client_addr(rhs._client_addr)
+    _sock(rhs._sock)
 {
 }
 
@@ -44,11 +33,7 @@ TcpConnection::~TcpConnection()
 TcpConnection& TcpConnection::operator=(const TcpConnection& rhs)
 {
     if (this != &rhs)
-    {
         _sock = rhs._sock;
-        _server_addr = rhs._server_addr;
-        _client_addr = rhs._client_addr;
-    }
     return *this;
 }
 
@@ -76,26 +61,6 @@ std::string TcpConnection::recv() const
 int TcpConnection::getSock() const
 {
     return _sock;
-}
-
-std::string TcpConnection::getServerIP() const
-{
-    return inet_ntoa(_server_addr.sin_addr);
-}
-
-std::string TcpConnection::getClientIP() const
-{
-    return inet_ntoa(_client_addr.sin_addr);
-}
-
-int TcpConnection::getServerPort() const
-{
-    return ntohs(_server_addr.sin_port);
-}
-
-int TcpConnection::getClientPort() const
-{
-    return ntohs(_client_addr.sin_port);
 }
 
 const char* TcpConnection::ConnectionException::what() const throw()

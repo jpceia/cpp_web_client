@@ -6,7 +6,7 @@
 /*   By: jpceia <joao.p.ceia@gmail.com>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/23 03:04:11 by jpceia            #+#    #+#             */
-/*   Updated: 2022/03/27 00:11:23 by jpceia           ###   ########.fr       */
+/*   Updated: 2022/03/27 02:15:06 by jpceia           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,13 +21,6 @@
 # include <map>
 
 # define BUFF_SIZE 2048
-
-struct TcpConnectionArgs
-{
-    int sock;
-    struct sockaddr_in server_addr;
-    struct sockaddr_in client_addr;
-};
 
 class TcpConnection
 {
@@ -50,7 +43,6 @@ public:
     };
 
     TcpConnection(int sock);
-    TcpConnection(const TcpConnectionArgs& args);
     TcpConnection(const TcpConnection& rhs);
 
     virtual ~TcpConnection();
@@ -60,11 +52,6 @@ public:
     virtual std::string recv() const;
 
     int getSock() const;
-
-    std::string getServerIP() const;
-    std::string getClientIP() const;
-    int getServerPort() const;
-    int getClientPort() const;
 
     class ConnectionException : public std::exception
     {
@@ -92,8 +79,6 @@ public:
 
 private:
     int _sock;
-    struct sockaddr_in _server_addr;
-    struct sockaddr_in _client_addr;
 };
 
 #endif
