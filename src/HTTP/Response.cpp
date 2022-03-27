@@ -6,7 +6,7 @@
 /*   By: jpceia <joao.p.ceia@gmail.com>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/22 15:33:45 by jceia             #+#    #+#             */
-/*   Updated: 2022/03/27 00:11:15 by jpceia           ###   ########.fr       */
+/*   Updated: 2022/03/27 02:47:51 by jpceia           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,9 +15,7 @@
 # include <fstream>
 
 
-HttpResponse::HttpResponse() :
-    HttpMessage(),
-    _status()
+HttpResponse::HttpResponse()
 {
 }
 
