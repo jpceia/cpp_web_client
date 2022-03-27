@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   HttpRequestParser.cpp                               :+:      :+:    :+:   */
+/*   HttpMessageParser.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jpceia <joao.p.ceia@gmail.com>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -10,32 +10,31 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "HTTP/RequestParser.hpp"
+#include "HTTP/Parser/Message.hpp"
 #include <sstream>
 
-HttpRequestParser::HttpRequestParser() :
-    HttpRequest(),
+HttpMessageParser::HttpMessageParser() :
     _state(PARSE_START),
     _buf(""),
     _content_length(0)
 {
 }
 
-HttpRequestParser::HttpRequestParser(const HttpRequestParser& rhs) :
-    HttpRequest(rhs),
+HttpMessageParser::HttpMessageParser(const HttpMessageParser& rhs) :
+    HttpMessage(rhs),
     _state(rhs._state),
     _buf(rhs._buf),
     _content_length(rhs._content_length)
 {
 }
 
-HttpRequestParser::~HttpRequestParser()
+HttpMessageParser::~HttpMessageParser()
 {
 }
 
-HttpRequestParser& HttpRequestParser::operator=(const HttpRequestParser& rhs)
+HttpMessageParser& HttpMessageParser::operator=(const HttpMessageParser& rhs)
 {
-    HttpRequest::operator=(rhs);
+    HttpMessage::operator=(rhs);
     if (this != &rhs)
     {
         _state = rhs._state;
@@ -49,7 +48,7 @@ HttpRequestParser& HttpRequestParser::operator=(const HttpRequestParser& rhs)
 //                                  Getters
 // -----------------------------------------------------------------------------
 
-ParseState HttpRequestParser::getState() const
+ParseState HttpMessageParser::getState() const
 {
     return _state;
 }
@@ -58,7 +57,7 @@ ParseState HttpRequestParser::getState() const
 //                                  Setters
 // -----------------------------------------------------------------------------
 
-void HttpRequestParser::setHeader(const std::string& key, const std::string& value)
+void HttpMessageParser::setHeader(const std::string& key, const std::string& value)
 {
     HttpMessage::setHeader(key, value);
     if (key == "Content-Length")
@@ -72,45 +71,30 @@ void HttpRequestParser::setHeader(const std::string& key, const std::string& val
 //                                   Parsers
 // -----------------------------------------------------------------------------
 
-ParseState HttpRequestParser::parse(const std::string& s)
+ParseState HttpMessageParser::parse(const std::string& s)
 {
     _buf += s;  // append last received chunk to buffer
-    if (_state == PARSE_START)
+    switch (_state)
+    {
+    case PARSE_START:
         return _parse_start();
-    if (_state == PARSE_HEADER)
+    case PARSE_HEADER:
         return _parse_headers();
-    if (_state == PARSE_CHUNK_HEAD)
-        return _parse_chunk_head();
-    if (_state == PARSE_CHUNK_CONTENT)
-        return _parse_chunk_content();
-    if (_state == PARSE_CHUNK_TAIL)
-        return _parse_chunk_tail();
-    if (_state == PARSE_BODY)
+    case PARSE_BODY:
         return _parse_body();
+    case PARSE_CHUNK_HEAD:
+        return _parse_chunk_head();
+    case PARSE_CHUNK_CONTENT:
+        return _parse_chunk_content();
+    case PARSE_CHUNK_TAIL:
+        return _parse_chunk_tail();
+    case PARSE_COMPLETE:
+        break ;
+    }
     return PARSE_COMPLETE;
 }
 
-ParseState HttpRequestParser::_parse_start()
-{
-    size_t pos = _buf.find("\r\n");
-
-    // only parsing if we have the first line complete
-    if (pos == std::string::npos)
-        return _state;
-    std::stringstream ss(_buf.substr(0, pos));  // pass first line to stream
-    _buf = _buf.substr(pos + 2);                // remove first line from buffer
-    std::string method;
-    std::string path;
-    ss >> method >> path >> _version;           // parse start line
-    if (!ss.eof())
-        throw HttpRequest::ParseException();
-    this->setPath(path);
-    this->setMethod(method);
-    _state = PARSE_HEADER;
-    return this->parse();                       // Consume buffer
-}
-
-ParseState HttpRequestParser::_parse_headers()
+ParseState HttpMessageParser::_parse_headers()
 {
     size_t pos = _buf.find("\r\n");
 
@@ -124,13 +108,10 @@ ParseState HttpRequestParser::_parse_headers()
     // if the line is empty the header section is over
     if (line.empty())                           
     {
-        if (_method == POST || _method == PUT)  // if the methods is POST or PUT
-        {                                       // we are now parsing the body
-            if (this->getHeader("Transfer-Encoding") == "chunked")
-                _state = PARSE_CHUNK_HEAD;
-            else
-                _state = PARSE_BODY;
-        }
+        if (this->getHeader("Transfer-Encoding") == "chunked")
+            _state = PARSE_CHUNK_HEAD;
+        else if(this->getHeader("Content-Length") != "")
+            _state = PARSE_BODY;
         else
         {
             _state = PARSE_COMPLETE;            // otherwise we are done
@@ -142,19 +123,19 @@ ParseState HttpRequestParser::_parse_headers()
     return this->parse();                       // Consume buffer
 }
 
-ParseState HttpRequestParser::_parse_body()
+ParseState HttpMessageParser::_parse_body()
 {
     _body += _buf;
     _buf = "";  // clear buffer
     size_t current_body_len = _body.size();
     if (current_body_len > _content_length)
-        throw HttpRequest::ParseException();
+        throw HttpMessage::ParseException();
     if (current_body_len == _content_length)
         _state = PARSE_COMPLETE;
     return _state;
 }
 
-ParseState HttpRequestParser::_parse_chunk_head()
+ParseState HttpMessageParser::_parse_chunk_head()
 {
     // check if the body is complete or if we need to consume a new chunk
     size_t pos = _buf.find("\r\n");
@@ -167,7 +148,7 @@ ParseState HttpRequestParser::_parse_chunk_head()
     // parse chunk size in hexadecimal format
     ss >> std::hex >> chunk_size;
     if (!ss.eof())
-        throw HttpRequest::ParseException();
+        throw HttpMessage::ParseException();
     if (chunk_size == 0)
     {
         _content_length = 0;
@@ -181,11 +162,11 @@ ParseState HttpRequestParser::_parse_chunk_head()
     return this->parse(); // consume buffer
 }
 
-ParseState HttpRequestParser::_parse_chunk_content()
+ParseState HttpMessageParser::_parse_chunk_content()
 {
     size_t current_body_len = _body.size();
     if (_content_length < current_body_len)
-        throw HttpRequest::ParseException();
+        throw HttpMessage::ParseException();
     // else
     if (_content_length > current_body_len)
     {
@@ -207,13 +188,13 @@ ParseState HttpRequestParser::_parse_chunk_content()
     return this->parse();
 }
 
-ParseState HttpRequestParser::_parse_chunk_tail()
+ParseState HttpMessageParser::_parse_chunk_tail()
 {
     size_t pos = _buf.find("\r\n");
     if (pos == std::string::npos)
         return _state; // feed more data
     if (pos > 0)
-        throw HttpRequest::ParseException();
+        throw HttpMessage::ParseException();
     // else (pos == 0)
     _buf = _buf.substr(2);
     if (_content_length == 0)
