@@ -6,7 +6,7 @@
 /*   By: jpceia <joao.p.ceia@gmail.com>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/24 00:12:30 by jpceia            #+#    #+#             */
-/*   Updated: 2022/03/27 02:46:03 by jpceia           ###   ########.fr       */
+/*   Updated: 2022/03/28 05:43:50 by jpceia           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ int HttpStatus::getCode() const
 std::istream &operator>>(std::istream &is, HttpStatus& status)
 {
     is >> status._code;
-    is >> status._reason;
+    std::getline(is, status._reason);
     return is;
 }
 
