@@ -6,7 +6,7 @@
 /*   By: jpceia <joao.p.ceia@gmail.com>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/23 06:02:05 by jpceia            #+#    #+#             */
-/*   Updated: 2022/03/27 02:53:37 by jpceia           ###   ########.fr       */
+/*   Updated: 2022/03/28 06:56:07 by jpceia           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ void HttpConnection::sendRequest(const HttpRequest& request) const
     ss << request;
     std::string msg = ss.str();
     while (!msg.empty())
-        TcpConnection::send(msg);
+        this->send(msg);
 }
 
 HttpResponse HttpConnection::recvResponse() const
@@ -56,7 +56,7 @@ HttpResponse HttpConnection::recvResponse() const
 
     while (state != PARSE_COMPLETE)
     {
-        std::string chunk = TcpConnection::recv();
+        std::string chunk = this->recv();
         state = response.parse(chunk);
         if (chunk.empty())
             throw TcpConnection::DisconnectedException();
