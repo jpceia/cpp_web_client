@@ -6,7 +6,7 @@
 /*   By: jpceia <joao.p.ceia@gmail.com>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/28 06:52:06 by jpceia            #+#    #+#             */
-/*   Updated: 2022/03/28 07:15:45 by jpceia           ###   ########.fr       */
+/*   Updated: 2022/03/28 07:36:52 by jpceia           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,9 +19,10 @@
 
 class HttpsConnection : public SslConnection, public HttpConnection 
 {
+public:
     HttpsConnection(int fd, const SslContext& ctx);
     HttpsConnection(const HttpsConnection& rhs);
-    ~HttpsConnection();
+    virtual ~HttpsConnection();
     HttpsConnection& operator=(const HttpsConnection& rhs);
 };
 

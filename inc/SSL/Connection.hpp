@@ -6,7 +6,7 @@
 /*   By: jpceia <joao.p.ceia@gmail.com>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/28 06:32:38 by jpceia            #+#    #+#             */
-/*   Updated: 2022/03/28 07:31:25 by jpceia           ###   ########.fr       */
+/*   Updated: 2022/03/28 07:36:40 by jpceia           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ public:
     SslConnection(int sock, const SslContext& ctx);
     SslConnection(const SslConnection& rhs);
     SslConnection& operator=(const SslConnection& rhs);
-    ~SslConnection();
+    virtual ~SslConnection();
 
     virtual void send(std::string& msg) const;
     virtual std::string recv() const;
