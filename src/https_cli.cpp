@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   http_cli.cpp                                       :+:      :+:    :+:   */
+/*   https_cli.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jpceia <joao.p.ceia@gmail.com>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/20 11:43:02 by jpceia            #+#    #+#             */
-/*   Updated: 2022/03/28 07:29:28 by jpceia           ###   ########.fr       */
+/*   Updated: 2022/03/28 07:50:44 by jpceia           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include <iostream>
 #include "TCP/Socket.hpp"
 #include "HTTP/Connection.hpp"
+#include "HTTPS/Connection.hpp"
 #include "HTTP/Request.hpp"
 #include "HTTP/Response.hpp"
 #include "SSL/Context.hpp"
@@ -40,8 +41,10 @@ int main(int argc, char *argv[])
     }
     
     TcpSocket socket;
+    socket.connect(host, port);
+    
     SslContext ctx("certs/certificate.crt", "certs/privateKey.key");
-    HttpConnection conn = socket.connect(host, port);
+    HttpsConnection conn(socket.getFd(), ctx);
     
     // Send a GET request to the server
     HttpRequest request;
