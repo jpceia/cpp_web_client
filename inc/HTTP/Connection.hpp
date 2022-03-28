@@ -6,7 +6,7 @@
 /*   By: jpceia <joao.p.ceia@gmail.com>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/23 05:15:40 by jpceia            #+#    #+#             */
-/*   Updated: 2022/03/27 02:26:40 by jpceia           ###   ########.fr       */
+/*   Updated: 2022/03/28 06:52:46 by jpceia           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@
 
 class TcpConnection;
 
-class HttpConnection : public TcpConnection
+class HttpConnection : virtual public TcpConnection
 {
 public:
     HttpConnection(int fd);
