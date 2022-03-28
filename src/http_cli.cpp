@@ -6,7 +6,7 @@
 /*   By: jpceia <joao.p.ceia@gmail.com>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/20 11:43:02 by jpceia            #+#    #+#             */
-/*   Updated: 2022/03/28 05:49:34 by jpceia           ###   ########.fr       */
+/*   Updated: 2022/03/28 06:20:31 by jpceia           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,8 @@ int main(int argc, char *argv[])
     request.setHeader("Accept-Encoding", "gzip, deflate, br");
     request.setHeader("Cache-Control", "max-age=0");
     request.setHeader("Connection", "keep-alive");
-    request.setHeader("User-Agent", "HTTP-cli");
+    request.setHeader("User-Agent", "ft-cli");
+    request.setHeader("Host", host);
 
     conn.sendRequest(request);
 
