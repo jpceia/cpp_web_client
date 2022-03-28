@@ -6,7 +6,7 @@
 /*   By: jpceia <joao.p.ceia@gmail.com>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/27 03:09:30 by jpceia            #+#    #+#             */
-/*   Updated: 2022/03/28 06:19:48 by jpceia           ###   ########.fr       */
+/*   Updated: 2022/03/28 07:51:26 by jpceia           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,5 +105,10 @@ TcpConnection TcpSocket::connect(const std::string& host, int port)
     addr.sin_addr = addrs[0];
     if (::connect(_sock, (struct sockaddr *)&addr, sizeof(addr)) < 0)
         throw std::runtime_error("connect(): " + std::string(strerror(errno)));
+    return _sock;
+}
+
+int TcpSocket::getFd() const
+{
     return _sock;
 }
