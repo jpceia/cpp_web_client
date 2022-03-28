@@ -6,7 +6,7 @@
 /*   By: jpceia <joao.p.ceia@gmail.com>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/20 11:43:02 by jpceia            #+#    #+#             */
-/*   Updated: 2022/03/28 06:20:31 by jpceia           ###   ########.fr       */
+/*   Updated: 2022/03/28 07:29:28 by jpceia           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,12 @@
 #include "HTTP/Connection.hpp"
 #include "HTTP/Request.hpp"
 #include "HTTP/Response.hpp"
+#include "SSL/Context.hpp"
 
 #include <sstream>
 #include <iostream>
+
+
 
 int main(int argc, char *argv[])
 {
@@ -37,7 +40,9 @@ int main(int argc, char *argv[])
     }
     
     TcpSocket socket;
+    SslContext ctx("certs/certificate.crt", "certs/privateKey.key");
     HttpConnection conn = socket.connect(host, port);
+    
     // Send a GET request to the server
     HttpRequest request;
     request.setHeader("Accept", "*/*");
