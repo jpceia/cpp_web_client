@@ -6,7 +6,7 @@
 /*   By: jpceia <joao.p.ceia@gmail.com>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/27 00:26:36 by jpceia            #+#    #+#             */
-/*   Updated: 2022/03/27 03:09:19 by jpceia           ###   ########.fr       */
+/*   Updated: 2022/03/28 05:20:25 by jpceia           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,15 +24,15 @@
 class TcpSocket
 {
 public:
-    TcpSocket(const std::string& host, int port);
+    TcpSocket();
     ~TcpSocket();
     TcpSocket(const TcpSocket& rhs);
     TcpSocket& operator=(const TcpSocket& rhs);
-    TcpConnection connect();
-    void close();
+    TcpConnection connect(const std::string& host = "127.0.0.1", int port = 80);
 private:
     int _sock;
-    struct addrinfo *_addr;
 };
+
+struct addrinfo* get_addrinfo(const std::string& host = "127.0.0.1", int port = 80);
 
 #endif

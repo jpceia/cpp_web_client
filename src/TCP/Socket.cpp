@@ -6,86 +6,80 @@
 /*   By: jpceia <joao.p.ceia@gmail.com>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/27 03:09:30 by jpceia            #+#    #+#             */
-/*   Updated: 2022/03/27 03:09:49 by jpceia           ###   ########.fr       */
+/*   Updated: 2022/03/28 05:50:12 by jpceia           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "TCP/Socket.hpp"
+#include <cerrno>
 
 
-TcpSocket::TcpSocket(const std::string& host, int port)
+struct addrinfo* get_addrinfo(const std::string& host, int port)
 {
-    struct addrinfo hints;
-    
-    std::stringstream ss;
-    ss << port;
+    struct addrinfo req;
+    struct addrinfo *res;
+    std::string s_port;
+    int ecode;
 
-    std::memset(&hints, '\0', sizeof(hints));
-    hints.ai_family   = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags    = AI_PASSIVE;
+    std::memset(&req, '\0', sizeof(req));
+    req.ai_family   = AF_UNSPEC;
+    req.ai_socktype = SOCK_STREAM;
+    req.ai_flags    = AI_PASSIVE;
 
-    // https://man7.org/linux/man-pages/man3/getaddrinfo.3.html
-    int ecode = getaddrinfo(host.c_str(), ss.str().c_str(), &hints, &_addr);
+    {
+        std::stringstream ss;
+        ss << port;
+        s_port = ss.str();
+    }
+
+    ecode = getaddrinfo(host.c_str(), s_port.c_str(), &req, &res);
     if (ecode != 0)
-    {
-        std::cerr << gai_strerror(ecode) << std::endl; // GetAddrInfoException
-        throw std::runtime_error("getaddrinfo() failed");
-    }
-    if (_addr == NULL)
-    {
-        std::cerr << "No addresses found" << std::endl; // NoFoundAddrException
-        throw std::runtime_error("getaddrinfo() failed");
-    }
+        throw std::runtime_error("get_addrinfo(): " + std::string(gai_strerror(ecode)));
+    if (res == NULL)
+        throw std::runtime_error("get_addrinfo(): No addresses found");
+    return res;
+}
 
-    _sock = socket(_addr->ai_family, _addr->ai_socktype, _addr->ai_protocol);
+TcpSocket::TcpSocket()
+{
+    _sock = socket(AF_INET, SOCK_STREAM, 0);
     if (_sock < 0)
-        throw std::runtime_error("socket() failed"); // CreateException
-    // https://man7.org/linux/man-pages/man2/fcntl.2.html
-    if (fcntl(_sock, F_SETFL, O_NONBLOCK) < 0)
-    {
-        // display errno
-        std::cerr << "fcntl failed" << std::endl;
-    }
+        throw std::runtime_error("socket(): " + std::string(strerror(errno)));
 
+    /*
+    https://stackoverflow.com/questions/6202454/operation-now-in-progress-error-on-connect-function-error
+    if (fcntl(_sock, F_SETFL, O_NONBLOCK) < 0)
+        throw std::runtime_error("fcntl(): " + std::string(strerror(errno)));
+    */
     int on = 1; //char yes='1'; // Solaris people use this
-    // lose the pesky "Address already in use" error message
-    
     if (setsockopt(_sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0)
-        throw std::runtime_error("setsockopt() failed"); // SetOptException  
+        throw std::runtime_error("setsockopt(): " + std::string(strerror(errno)));
 }
 
 TcpSocket::TcpSocket(const TcpSocket& rhs) :
     _sock(rhs._sock)
 {
-    _addr = new struct addrinfo;
-    *_addr = *rhs._addr;
 }
 
 TcpSocket::~TcpSocket()
 {
-    freeaddrinfo(_addr);
+    ::close(_sock);
 }
 
 TcpSocket& TcpSocket::operator=(const TcpSocket& rhs)
 {
     if (this != &rhs)
-    {
         _sock = rhs._sock;
-        *_addr = *rhs._addr;
-    }
     return *this;
 }
 
-TcpConnection TcpSocket::connect()
+TcpConnection TcpSocket::connect(const std::string& host, int port)
 {
-    int connection = ::connect(_sock, _addr->ai_addr, _addr->ai_addrlen);
-    if (connection < 0)
-        throw std::runtime_error("connect() failed"); // ConnectException
-    return connection;
-}
+    struct addrinfo *addr = get_addrinfo(host, port);
+    int ecode = ::connect(_sock, addr->ai_addr, addr->ai_addrlen);
+    freeaddrinfo(addr);
 
-void TcpSocket::close()
-{
-    ::close(_sock);
+    if (ecode < 0)
+        throw std::runtime_error("connect(): " + std::string(strerror(errno)));
+    return _sock;
 }
