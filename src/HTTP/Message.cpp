@@ -6,7 +6,7 @@
 /*   By: jpceia <joao.p.ceia@gmail.com>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/20 00:50:16 by jpceia            #+#    #+#             */
-/*   Updated: 2022/03/27 00:11:06 by jpceia           ###   ########.fr       */
+/*   Updated: 2022/03/28 05:37:59 by jpceia           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 #include <fstream>
 
 HttpMessage::HttpMessage() :
-    _version("Http/1.1"),
+    _version("HTTP/1.1"),
     _body("")
 {
 }
